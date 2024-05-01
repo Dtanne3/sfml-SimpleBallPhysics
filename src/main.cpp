@@ -83,31 +83,26 @@ void calcCol(Ball& b1, Ball& b2)
 			printf("%f\n", (a[0] * b[0]) + (a[1] * b[1]));
 			return (a[0] * b[0]) + (a[1] * b[1]);
 		};
-		
+
 		auto vectorNorm = [](std::valarray<float> a) -> float
 		{
 			printf("%f\n", pow(sqrt(pow(a[0], 2) + pow(a[1], 2)), 2));
 			return pow(sqrt(pow(a[0], 2) + pow(a[1], 2)), 2);
 		};
-		
+
 		return v1 - (2 * m2 / m1 + m2) *
 			(dot(v1 - v2, c1 - c2) / vectorNorm(c1 - c2));
 	};
 
-	
+
 	std::valarray<float> r1 = elasticColVel(b1Vel, b2Vel, b1Mass, b2Mass, b1Pos, b2Pos);
-	std::valarray<float> r2 = elasticColVel(b2Vel, b1Vel, b2Mass, b1Mass, b2Pos, b1Pos);
 
 
 	b1.velocity.x = (r1[0] > 100) ? 100 : r1[0];
 	b1.velocity.y = (r1[1] > 100) ? 100 : r1[1];
-	b2.velocity.x = (r1[0] > 100) ? 100 : r2[0];
-	b2.velocity.y = (r1[1] > 100) ? 100 : r2[1];
 
 	printf("newX1: %f\n", r1[0]);
 	printf("newY1: %f\n", r1[1]);
-	printf("newX2: %f\n", r2[0]);
-	printf("newY2: %f\n", r2[1]);
 }
 
 bool checkCollision(Ball& b1, Ball& b2)
