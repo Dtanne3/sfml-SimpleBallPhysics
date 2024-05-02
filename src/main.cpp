@@ -185,8 +185,9 @@ int main()
 {
 	//Var
 	const unsigned int FPS = 30;
-	enum State {IDLE, ADD};
-	State currentState = IDLE;
+	enum State {IDLE, ADD, SHOW, HIDE};
+	State adderState = IDLE;
+	State showColState = HIDE;
 	const int entityLimit = 100;
 	std::vector<Ball> entityList;
 	sf::Color colors[] = { sf::Color::Blue, sf::Color::Red, sf::Color::Green };
@@ -212,7 +213,13 @@ int main()
 	addBall.setTextString("Add");
 	addBall.setTextColor(sf::Color::Black);
 
-	SUI::Button clearPanel(sf::Vector2f(200.f, 100.f), sf::Vector2f(900.f, 300.f));
+	SUI::Button toggleQuad(sf::Vector2f(200.f, 100.f), sf::Vector2f(900.f, 250.f));
+	toggleQuad.setColor(sf::Color::Blue);
+	toggleQuad.setFont(sans);
+	toggleQuad.setTextString("Show Collision");
+	toggleQuad.setTextColor(sf::Color::Black);
+	
+	SUI::Button clearPanel(sf::Vector2f(200.f, 100.f), sf::Vector2f(900.f, 450.f));
 	clearPanel.setColor(sf::Color::Blue);
 	clearPanel.setFont(sans);
 	clearPanel.setTextString("Clear");
@@ -237,11 +244,12 @@ int main()
 				case sf::Event::MouseMoved:
 					highlightButton(addBall, window);
 					highlightButton(clearPanel, window);
+					highlightButton(toggleQuad, window);
 					break;
 				case sf::Event::MouseButtonPressed:
 					if (addBall.isHovered(window))
 					{
-						currentState = (currentState == IDLE) ? ADD : IDLE;
+						adderState = (adderState == IDLE) ? ADD : IDLE;
 						std::string text = (addBall.getTextString() == "Add") ? "Cancel" : "Add";
 						addBall.setTextString(text);
 					}
@@ -250,10 +258,17 @@ int main()
 						entityList.clear();
 						collisionFinder.clear();
 					}
+					else if (toggleQuad.isHovered(window))
+					{
+						showColState = (showColState == HIDE) ? SHOW : HIDE;
+						std::string text = (toggleQuad.getTextString() == "Show Collision") ?
+							"Hide Collision" : "Show Collision";
+						toggleQuad.setTextString(text);
+					}
 					else if(mouseInPanel(SimPanel, window))
 					{
 						//add ball object to mouse position
-						if (currentState == ADD)
+						if (adderState == ADD)
 						{
 							if (entityList.size() < entityLimit)
 							{
@@ -269,9 +284,13 @@ int main()
 		window.draw(MainPanel);
 		window.draw(SimPanel);
 		addBall.drawTo(window);
+		toggleQuad.drawTo(window);
 		clearPanel.drawTo(window);
 		applyBallPhysics(SimPanel, entityList, collisionVector, collisionFinder, deltaTime);
-		collisionFinder.drawBounds(window);
+		if (showColState == SHOW)
+		{
+			collisionFinder.drawBounds(window);
+		}
 		for (Ball& b : entityList)
 		{
 			b.drawTo(window);
