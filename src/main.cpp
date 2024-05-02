@@ -39,7 +39,7 @@ void calcPos(Ball& b, sf::RectangleShape& panel, float dT)
 	float xVel = b.velocity.x;
 	float yVel = b.velocity.y + (yForce * dT);
 	b.velocity = sf::Vector2f(xVel, yVel);
-	printf("Ball velocity: (%f , %f)\n", xVel, yVel);
+	//printf("Ball velocity: (%f , %f)\n", xVel, yVel);
 	
 	
 	sf::Vector2f nPos = sf::Vector2f((b.getPosition().x + b.velocity.x), (b.getPosition().y + b.velocity.y));
@@ -61,7 +61,7 @@ void calcPos(Ball& b, sf::RectangleShape& panel, float dT)
 		b.velocity.y *= -1;
 	}
 
-	printf("new Pos: (%f,%f) \n", nPos.x, nPos.y);
+	//printf("new Pos: (%f,%f) \n", nPos.x, nPos.y);
 	b.setPosition(nPos);
 }
 
@@ -74,19 +74,16 @@ void calcCol(Ball& b1, Ball& b2)
 	std::valarray<float>b1Pos = { b1.getPosition().x, b1.getPosition().y };
 	std::valarray<float>b2Pos = { b2.getPosition().x, b2.getPosition().y };
 
-
 	auto elasticColVel = [](std::valarray<float> v1, std::valarray<float> v2, float m1, float m2, std::valarray<float> c1,
 		std::valarray<float> c2) -> std::valarray<float>
 	{
 		auto dot = [](std::valarray<float> a, std::valarray<float> b) -> float
 		{
-			printf("%f\n", (a[0] * b[0]) + (a[1] * b[1]));
 			return (a[0] * b[0]) + (a[1] * b[1]);
 		};
 
 		auto vectorNorm = [](std::valarray<float> a) -> float
 		{
-			printf("%f\n", pow(sqrt(pow(a[0], 2) + pow(a[1], 2)), 2));
 			return pow(sqrt(pow(a[0], 2) + pow(a[1], 2)), 2);
 		};
 
@@ -94,21 +91,16 @@ void calcCol(Ball& b1, Ball& b2)
 			(dot(v1 - v2, c1 - c2) / vectorNorm(c1 - c2));
 	};
 
-
 	std::valarray<float> r1 = elasticColVel(b1Vel, b2Vel, b1Mass, b2Mass, b1Pos, b2Pos);
 
+	b1.velocity.x = r1[0];
+	b1.velocity.y = r1[1];
 
-	b1.velocity.x = (r1[0] > 100) ? 100 : r1[0];
-	b1.velocity.y = (r1[1] > 100) ? 100 : r1[1];
-
-	printf("newX1: %f\n", r1[0]);
-	printf("newY1: %f\n", r1[1]);
 }
 
 bool checkCollision(Ball& b1, Ball& b2)
 {
 	float dist = calcDist(b1, b2);
-	printf("dist: %f\n", dist);
 	return (dist < (b1.getRadius() + b2.getRadius()));
 }
 
@@ -125,16 +117,21 @@ void applyBallCollision(std::vector<Ball>& entityList, std::vector<Ball*>& colVe
 	{
 		colVector.clear();
 		colVector = q.getPotentialCollisions(entityList[i], colVector);
-		printf("colVector size: %i\n", colVector.size());
 		if (colVector.size() > 0)
 		{
-			int j = 0;
-			while (j < colVector.size())
+			for(int j = 0; j < colVector.size(); j++)
 			{
 				if (checkCollision(entityList[i], *colVector[j]))
 				{
+					float overlap = 0.5 * calcDist(entityList[i], *colVector[j]) - (entityList[i].getRadius() + colVector[j]->getRadius());
+					float nxA = entityList[i].getPosition().x - overlap;
+					float nyA = entityList[i].getPosition().y - overlap;
+					float nxB = colVector[j]->getPosition().x + overlap;
+					float nyB = colVector[j]->getPosition().y + overlap;
 					
-					printf("collision detected\n");
+					entityList[i].setPosition(sf::Vector2f(nxA, nyA));
+					colVector[j]->setPosition(sf::Vector2f(nxB, nyB));
+					
 					calcCol(entityList[i], *colVector[j]);
 				}
 				j++;
@@ -190,7 +187,7 @@ int main()
 	const unsigned int FPS = 30;
 	enum State {IDLE, ADD};
 	State currentState = IDLE;
-	const int entityLimit = 50;
+	const int entityLimit = 100;
 	std::vector<Ball> entityList;
 	sf::Color colors[] = { sf::Color::Blue, sf::Color::Red, sf::Color::Green };
 	float deltaTime = 1/(float)FPS;
@@ -251,6 +248,7 @@ int main()
 					else if (clearPanel.isHovered(window))
 					{
 						entityList.clear();
+						collisionFinder.clear();
 					}
 					else if(mouseInPanel(SimPanel, window))
 					{
@@ -279,6 +277,5 @@ int main()
 			b.drawTo(window);
 		}
 		window.display();
-		printf("done\n");
 	}
 }

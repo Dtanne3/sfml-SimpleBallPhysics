@@ -74,7 +74,6 @@ int QuadTree::getIndex(Ball& b)
 }
 void QuadTree::insert(Ball& b)
 {
-	//put object into child nodes
 	if (nodeList.size() > 0)
 	{
 		int index = getIndex(b);
@@ -84,11 +83,10 @@ void QuadTree::insert(Ball& b)
 			return;
 		}
 	}
-	//put object into parent node and check if splitting is necessary
+	
 	eList.push_back(&b);
 	if (eList.size() > maxEntities && level < maxLevels)
 	{
-		//Bug: node is splitting more than necessary
 		if (nodeList.size() == 0)
 		{
 			split();
@@ -140,23 +138,5 @@ void QuadTree::drawBounds(sf::RenderWindow& panel)
 	else
 	{
 		panel.draw(bounds);
-	}
-}
-void QuadTree::displayQuadrantEntityLoc()
-{
-	if (nodeList.size() > 0)
-	{
-		for (int i = 0; i < nodeList.size(); i++)
-		{
-			nodeList[i].displayQuadrantEntityLoc();
-		}
-	}
-	for (int i = 0; i < eList.size(); i++)
-	{
-		int index = getIndex(*eList[i]);
-		if (index != -1)
-		{
-			printf("Entity %i in Quadrant %i\n", i, index);
-		}
 	}
 }

@@ -27,6 +27,5 @@ public:
 	//for drawing. May Delete Later
 	sf::RectangleShape getBounds();
 	void drawBounds(sf::RenderWindow& panel);
-	void displayQuadrantEntityLoc();
 };
 
