@@ -196,7 +196,7 @@ int main()
 
 	//Font
 	sf::Font sans;
-	sans.loadFromFile("OpenSans.ttf");
+	sans.loadFromFile("src/OpenSans.ttf");
 	
 	//Window
 	sf::RenderWindow window(sf::VideoMode(1200, 600), "Ball Physics", sf::Style::Close);
